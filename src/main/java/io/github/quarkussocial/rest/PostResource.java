@@ -6,14 +6,22 @@ import io.github.quarkussocial.domain.repository.PostRepository;
 import io.github.quarkussocial.domain.repository.UserRepository;
 import io.github.quarkussocial.rest.dto.CreatePostRequest;
 import io.github.quarkussocial.rest.dto.CreateUserRequest;
+import io.github.quarkussocial.rest.dto.PostResponse;
+import io.quarkus.hibernate.orm.panache.PanacheQuery;
+import io.quarkus.panache.common.Sort;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Path("/users/{userId}/posts")
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
 public class PostResource {
 
     private UserRepository userRepository;
@@ -26,10 +34,11 @@ public class PostResource {
     }
 
     @POST
+    @Transactional
     public Response savePost(@PathParam("userId") Long userId, CreatePostRequest postRequest) {
         User user = userRepository.findById(userId);
 
-        if (user != null) {
+        if (user == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
 
@@ -43,8 +52,21 @@ public class PostResource {
     }
 
     @GET
-    public Response listPost() {
-        return Response.ok().build();
+    public Response listPost(@PathParam("userId") Long userId) {
+
+        User user = userRepository.findById(userId);
+
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        PanacheQuery<Post> query = postRepository.find("user", Sort.by("dateTime", Sort.Direction.Descending), user);
+
+        List<Post> posts = query.list();
+
+        List<PostResponse> postResponse = posts.stream().map(PostResponse::fromEntity).collect(Collectors.toList());
+
+        return Response.ok(postResponse).build();
     }
 
 }
