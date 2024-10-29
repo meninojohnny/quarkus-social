@@ -5,7 +5,6 @@ import io.github.quarkussocial.domain.model.User;
 import io.github.quarkussocial.domain.repository.PostRepository;
 import io.github.quarkussocial.domain.repository.UserRepository;
 import io.github.quarkussocial.rest.dto.CreatePostRequest;
-import io.github.quarkussocial.rest.dto.CreateUserRequest;
 import io.github.quarkussocial.rest.dto.PostResponse;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Sort;

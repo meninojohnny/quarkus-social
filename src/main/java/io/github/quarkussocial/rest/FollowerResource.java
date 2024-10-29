@@ -63,6 +63,17 @@ public class FollowerResource {
         responseObject.setContent(list.stream().map(FollowerResponse::new).collect(Collectors.toList()));
 
         return Response.ok(responseObject).build();
+    }
 
+    @DELETE
+    @Transactional
+    public Response unfollowUser(@PathParam("userId") Long userId, @QueryParam("followerId") Long followerId) {
+        User user = userRepository.findById(userId);
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+
+        followerRepository.deleteByFollowerAndUser(userId, followerId);
+        return Response.noContent().build();
     }
 }
